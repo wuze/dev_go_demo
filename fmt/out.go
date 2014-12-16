@@ -140,4 +140,8 @@ func main() {
 	num := bytes.Count(bt, sh)
 	fmt.Printf("%d times\n", num)
 
+	str = "was"
+	num = bytes.IndexAny(bt, str)
+	fmt.Printf("Index Is: %d\n", num)
+
 }
