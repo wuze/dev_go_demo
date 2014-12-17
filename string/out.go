@@ -73,11 +73,9 @@ func (us Ustr) Format(f fmt.State, c rune) {
 
 	case 'v':
 		if f.Flag('#') {
-
 			f.Write([]byte("TESTESTEST\n"))
 			f.Write([]byte(us.GoString()))
 		} else {
-
 			f.Write([]byte(us.String()))
 		}
 
@@ -89,6 +87,7 @@ func (us Ustr) Format(f fmt.State, c rune) {
 func main() {
 
 	us := Ustr("Hello World")
+
 	fmt.Printf("% 0-+#8.5m\n", us)
 	fmt.Printf("%#v\n", us)
 

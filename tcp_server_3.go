@@ -1,13 +1,13 @@
 package main
 
 import (
-	//	"bufio"
+	"bufio"
 	"bytes"
 	"container/list"
 	"fmt"
 	"net"
-	//"os"
-	//"time"
+	"os"
+	//	"time"
 )
 
 type Client struct {
@@ -20,60 +20,53 @@ type Client struct {
 }
 
 func (c *Client) Read(buffer []byte) bool {
-
-	bytesRead, err := c.Conn.Read(buffer)
-
-	if bytesRead == 0 {
-		c.Close()
-		return false
-	}
+	bytesRead, err := c.Conn.Read(buffer) // {{{
 
 	if err != nil {
-		fmt.Println("3. Read Error: ", err)
+		fmt.Println("Read Error")
 		c.Close()
+		Log(err, "\n")
 		return false
 	}
 
-	Log("\n3. Read: ", bytesRead, " bytes\n")
+	Log("Read: ", bytesRead, " bytes\n")
 	return true
-}
+} // }}}
 
 func (c *Client) Close() {
-	c.Quit <- true
+	c.Quit <- true // {{{
 	c.Conn.Close()
 	c.RemoveMe()
-}
+} // }}}
 
 func (c *Client) RemoveMe() {
-
+	// {{{
 	for entry := c.ClientList.Front(); entry != nil; entry = entry.Next() {
 		client := entry.Value.(Client)
 		if c.Equal(&client) {
-			Log("4. RemoveMe", c.Name, "\n")
+			Log("RemoveMe", c.Name, "\n")
 			c.ClientList.Remove(entry)
 		}
 	}
 
-}
+} // }}}
 
 func Log(v ...interface{}) {
 	fmt.Print(v...)
 }
 
-// 判断是否为同一个客户端
 func (c *Client) Equal(other *Client) bool {
-	if bytes.Equal([]byte(c.Name), []byte(other.Name)) {
+	if bytes.Equal([]byte(c.Name), []byte(other.Name)) { // {{{
 		if c.Conn == other.Conn {
 			return true
 		}
 	}
 
 	return false
-}
+} // }}}
 
-// 读取客户端发来的消息
 func ClientReader(client *Client) {
-	buffer := make([]byte, 2048)
+	buffer := make([]byte, 2048) // {{{
 
 	for client.Read(buffer) {
 		if bytes.Equal(buffer, []byte("/quit")) {
@@ -81,7 +74,7 @@ func ClientReader(client *Client) {
 			break
 		}
 
-		Log("ClientRead RCV:", client.Name, " > ", string(buffer))
+		Log("ClientRead RCV:", client.Name, ">", string(buffer))
 		send := client.Name + ">" + string(buffer)
 
 		client.Outgoing <- send
@@ -93,16 +86,20 @@ func ClientReader(client *Client) {
 	}
 
 	client.Outgoing <- client.Name + " has left chat"
-	Log("ClientReader stopped For:  ", client.Name)
+	Log("ClientReader stopped for ", client.Name)
+} // }}}
+
+func ShowStatus() {
+	reader := bufio.NewReader(os.Stdin)
+
 }
 
-// 发送消息给客户端
 func ClientSender(client *Client) {
-
+	// {{{
 	for {
 		select {
 		case buffer := <-client.Incoming:
-			Log("2. ClientSender SND: ", string(buffer), "\n")
+			Log("ClientSender SND: ", string(buffer), "\n")
 			count := 0
 
 			for i := 0; i < len(buffer); i++ {
@@ -112,19 +109,19 @@ func ClientSender(client *Client) {
 				count++
 			}
 
-			//Log("XSend Size: ", count, "\n")
+			Log("XSend Size: ", count, "\n")
 			client.Conn.Write([]byte(buffer)[0:count])
 
 		case <-client.Quit:
-			Log("Client  Name; ", client.Name, " quiting\n")
+			Log("Client ", client.Name, " quiting\n")
 			client.Conn.Close()
 			break
 		}
 	}
-}
+} // }}}
 
 func ClientHandler(conn net.Conn, ch chan string, clientList *list.List) {
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 1024) // {{{
 	bytesRead, err := conn.Read(buffer)
 
 	if err != nil {
@@ -139,29 +136,26 @@ func ClientHandler(conn net.Conn, ch chan string, clientList *list.List) {
 	go ClientReader(newClient)
 
 	clientList.PushBack(*newClient)
-	//	fmt.Printf("当前用户数为: %d 人\n", clientList.Len())
-
 	ch <- string(name + " has Joined the chat")
-}
+} // }}}
 
 func IOHandler(Incoming <-chan string, clientList *list.List) {
-
+	// {{{
 	for {
-		Log("1. (IOHandler)Waiting for input...\n")
-		// 会阻塞在此处
+		Log("(IOHandler)Waiting for input...\n")
 		input := <-Incoming
 
-		Log("Handling ", input, "\r\n\r\n")
+		Log("Handling ", input, "\n")
 
 		for e := clientList.Front(); e != nil; e = e.Next() {
 			client := e.Value.(Client)
 			client.Incoming <- input
 		}
 	}
-}
 
-func main() {
+} // }}}
 
+func Run_Server() {
 	Log("Hello Server\n")
 
 	clientList := list.New()
@@ -174,9 +168,7 @@ func main() {
 	tcpAddr, error := net.ResolveTCPAddr("tcp", service)
 
 	if error != nil {
-
 		Log("Error: Could not resolve address\n")
-
 	} else {
 
 		netListen, err := net.Listen(tcpAddr.Network(), tcpAddr.String())
@@ -194,12 +186,28 @@ func main() {
 				if error != nil {
 					Log("Client error: ", error, "\n")
 				} else {
+
 					// 这里往channel 里面塞数据
 					go ClientHandler(connection, in, clientList)
-				}
 
+				}
 			}
 		}
-
 	}
+}
+
+func GetServerStatus(st chan string) {
+
+	for {
+		str := <-st
+		if str == "ok" {
+		}
+	}
+}
+
+func main() {
+
+	go Run_Server()
+	go GetServerStatus()
+
 }

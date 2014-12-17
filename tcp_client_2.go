@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io"
+	//	"io"
 	"net"
 	"os"
 	"time"
@@ -21,22 +21,27 @@ func main() {
 		conn, err := net.Dial("tcp", "127.0.0.1:9988")
 		checkError(err)
 
-		fmt.Printf("connect success! ID: %d\n", i+1)
+		//fmt.Printf("connect success! ID: %d\n", i+1)
 
 		var buf [512]byte
 
-		for {
-			_, err := conn.Read(buf[0:])
-			if err != nil {
-				if err == io.EOF {
-					break
+		str := fmt.Sprintf("Data From client ID: %d ", i)
+		conn.Write([]byte(str))
+
+		/*
+			for {
+				_, err := conn.Read(buf[0:])
+				if err != nil {
+					if err == io.EOF {
+						break
+					}
 				}
 			}
-		}
+		*/
 
+		conn.Read(buf[0:])
 		fmt.Println(string(buf[:]))
 		time.Sleep(1000 * time.Millisecond)
 		conn.Close()
 	}
-
 }
