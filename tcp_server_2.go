@@ -151,7 +151,7 @@ func IOHandler(Incoming <-chan string, clientList *list.List) {
 		// 会阻塞在此处
 		input := <-Incoming
 
-		Log("Handling ", input, "\r\n\r\n")
+		Log("Handling:", input, "\r\n\r\n")
 
 		for e := clientList.Front(); e != nil; e = e.Next() {
 			client := e.Value.(Client)
