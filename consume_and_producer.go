@@ -29,15 +29,34 @@ func main() {
 	//go producer(c, 100)
 	//consumer(c)
 
-	defer func() {
-		fmt.Println("C")
-		if err := recover(); err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println("d")
-	}()
+	/*
+		defer func() {
+			fmt.Println("C")
+			if err := recover(); err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println("d")
+		}()
 
-	f()
+		f()
+	*/
+	var mp = map[string]int{
+		"aaa": 1,
+		"bbb": 2,
+		"ccc": 3,
+		"ddd": 4,
+	}
+
+	fmt.Println("===================\n")
+	var m []string
+
+	for k, v := range mp {
+		m = append(m, k)
+		fmt.Printf("KEY:%s   VALUE: %d\n", k, v)
+	}
+
+	fmt.Println("All Keys:\n")
+	fmt.Println(m)
 }
 
 func f() {
