@@ -100,6 +100,7 @@ func ClientReader(client *Client) {
 func ClientSender(client *Client) {
 
 	for {
+		fmt.Printf("Waiting ....\n")
 		select {
 		case buffer := <-client.Incoming:
 			Log("2. ClientSender SND: ", string(buffer), "\n")
@@ -194,12 +195,10 @@ func main() {
 				if error != nil {
 					Log("Client error: ", error, "\n")
 				} else {
-					// 这里往channel 里面塞数据
 					go ClientHandler(connection, in, clientList)
 				}
 
 			}
 		}
-
 	}
 }

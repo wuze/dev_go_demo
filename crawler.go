@@ -6,14 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"time"
 )
 
 var websites []string
 
 func main() {
-	//runtime.GOMAXPROCS(4)
-	// 各大电商网站首页数据量大小检测
+	runtime.GOMAXPROCS(4)
 	websites = []string{
 		"http://www.51buy.com/", "http://www.360buy.com/", "http://www.tmall.com/", "http://www.taobao.com/",
 		"http://china.alibaba.com/", "http://www.paipai.com/", "http://shop.qq.com/", "http://www.lightinthebox.com/",
@@ -50,7 +50,7 @@ func parallelRequest(pnum int, websites []string) { // 并行抓取
 		r := <-doneChans // 完成一个，同时获取下一个任务
 		<-execChans      // 紧接着读取下一个任务，类是于beanstalkd的任务分发机制
 
-		if !r {          // 获取失败时，打印该网址失败。
+		if !r { // 获取失败时，打印该网址失败。
 			log.Printf("第 %s 项获取失败", i)
 		}
 	}
@@ -73,7 +73,6 @@ func request(i int, url string, execChans chan bool, doneChans chan bool, fetchD
 	startTime := time.Now().UnixNano()
 	resp, _ := http.Get(url)
 
-
 	// 类似析构函数
 	defer (func() {
 		resp.Body.Close()
@@ -84,7 +83,7 @@ func request(i int, url string, execChans chan bool, doneChans chan bool, fetchD
 
 	body, err := ioutil.ReadAll(resp.Body)
 
-	fmt.Printf("Http body: %v\n", string(body))
+	//fmt.Printf("Http body: %v\n", string(body))
 
 	var f = fmt.Sprintf("%d.txt", i)
 
